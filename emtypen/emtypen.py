@@ -196,19 +196,23 @@ def close_struct ():
     pure_virtual_members = ''
     virtual_members = ''
 
+    function_offset = 2;
+
     for function in data.member_functions:
         if data.copy_on_write:
             nonvirtual_members += \
                 indentation + function[0] + '\n' + \
-                indentation + '{ assert(handle_); ' + function[2] + \
+                indentation + '{\nassert(handle_); ' + function[2] + \
                 (function[4] == 'const' and 'read().' or 'write().') + \
-                function[3] + '(' + function[1] + ' ); }\n'
+                function[3] + '(' + function[1] + ' );\n}\n'
         else:
             nonvirtual_members += \
                 indentation + function[0] + '\n' + \
-                indentation + '{ assert(handle_); ' + function[2] + \
+                indentation + '{\n' + \
+                indent(function_offset) + 'assert(handle_); ' + function[2] + \
                 'handle_->' + function[3] + \
-                '(' + function[1] + ' ); }\n'
+                '(' + function[1] + ' );\n' + \
+                indentation + '}\n'
 
         pure_virtual_members += \
             indentation * 2 + 'virtual ' + function[0] + ' = 0;\n'
@@ -483,6 +487,9 @@ if match and match.start() == archetypes.index('#'):
 #define {0}
 
 '''.format(match.group(1))
+
+# add std-includes
+output[0] += '#include <cassert>\n#include <memory>\n#include <utility>\n'
 
 all_clang_args = [args.file]
 all_clang_args.extend(args.clang_args)
