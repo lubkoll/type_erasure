@@ -173,6 +173,16 @@ TEST( TestBasicFooable, Cast )
     Fooable fooable = MockFooable();
 
     EXPECT_TRUE( fooable.cast<int>() == nullptr );
-    EXPECT_FALSE( fooable.cast<MockFooable>() == nullptr );
+    ASSERT_FALSE( fooable.cast<MockFooable>() == nullptr );
+    EXPECT_EQ( fooable.cast<MockFooable>()->foo(), Mock::value );
+}
+
+TEST( TestBasicFooable, ConstCast )
+{
+    const Fooable fooable = MockFooable();
+
+    EXPECT_TRUE( fooable.cast<int>() == nullptr );
+    ASSERT_FALSE( fooable.cast<MockFooable>() == nullptr );
+    EXPECT_EQ( fooable.cast<MockFooable>()->foo(), Mock::value );
 }
 
