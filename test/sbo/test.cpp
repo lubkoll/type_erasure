@@ -312,3 +312,24 @@ TEST( TestSBOFooable, Cast_LargeObject )
     fooable.set_value(Mock::other_value);
     EXPECT_EQ( fooable.cast<MockLargeFooable>()->foo(), Mock::other_value );
 }
+
+
+TEST( TestSBOFooable, ConstCast_SmallObject )
+{
+    const Fooable fooable = MockFooable();
+
+    EXPECT_TRUE( fooable.cast<int>() == nullptr );
+    ASSERT_FALSE( fooable.cast<MockFooable>() == nullptr );
+
+    EXPECT_EQ( fooable.cast<MockFooable>()->foo(), Mock::value );
+}
+
+TEST( TestSBOFooable, ConstCast_LargeObject )
+{
+    const Fooable fooable = MockLargeFooable();
+
+    EXPECT_TRUE( fooable.cast<int>() == nullptr );
+    ASSERT_FALSE( fooable.cast<MockLargeFooable>() == nullptr );
+
+    EXPECT_EQ( fooable.cast<MockLargeFooable>()->foo(), Mock::value );
+}

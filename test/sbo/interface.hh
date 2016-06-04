@@ -71,7 +71,7 @@ namespace SBO {
         T* cast()
         {
             assert(handle_);
-            void* buffer_ptr = get_buffer_ptr<typename std::decay<T>::type>(buffer_);
+            void* buffer_ptr = get_buffer_ptr<typename std::decay<T>::type>(const_cast<Buffer&>(buffer_));
             if(buffer_ptr)
             {
                 Handle<T,false>* handle = dynamic_cast<Handle<T,false>*>(handle_);
@@ -92,7 +92,7 @@ namespace SBO {
         const T* cast() const
         {
             assert(handle_);
-            void* buffer_ptr = get_buffer_ptr<typename std::decay<T>::type>(buffer_);
+            void* buffer_ptr = get_buffer_ptr<typename std::decay<T>::type>(const_cast<Buffer&>(buffer_));
             if(buffer_ptr)
             {
                 const Handle<T,false>* handle = dynamic_cast<const Handle<T,false>*>(handle_);
@@ -243,11 +243,12 @@ namespace SBO {
         {
             using BufferHandle = Handle<T,false>;
     
-            void* buf_ptr = &buffer;
-            std::size_t buf_size = sizeof(buffer);
+            void* buffer_ptr = &buffer;
+            std::size_t buffer_size = sizeof(buffer);
             return std::align( alignof(BufferHandle),
                                sizeof(BufferHandle),
-                               buf_ptr, buf_size);
+                               buffer_ptr,
+                               buffer_size);
     
         }
     
