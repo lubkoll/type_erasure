@@ -9,7 +9,6 @@
       EXPECT_EQ( n_heap_allocations, expected_allocations ); \
     }
 
-#ifdef INSTRUMENT_COPIES
 inline std::size_t& heap_allocations ()
 {
     static std::size_t allocations_ = 0;
@@ -36,4 +35,3 @@ void operator delete (void * ptr)
 
 void operator delete[] (void * ptr)
 { free(ptr); }
-#endif
