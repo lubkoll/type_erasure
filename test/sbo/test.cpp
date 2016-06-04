@@ -310,5 +310,5 @@ TEST( TestSBOFooable, Cast_LargeObject )
     ASSERT_FALSE( fooable.cast<MockLargeFooable>() == nullptr );
 
     fooable.set_value(Mock::other_value);
-    EXPECT_EQ( fooable.cast<MockFooable>()->foo(), Mock::other_value );
+    EXPECT_EQ( fooable.cast<MockLargeFooable>()->foo(), Mock::other_value );
 }

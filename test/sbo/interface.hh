@@ -80,7 +80,7 @@ namespace SBO {
             }
             else
             {
-                Handle<T,true>* handle = dynamic_cast<Handle<T,true>*>(handle);
+                Handle<T,true>* handle = dynamic_cast<Handle<T,true>*>(handle_);
                 if(handle)
                     return &handle->value_;
             }
@@ -95,13 +95,13 @@ namespace SBO {
             void* buffer_ptr = get_buffer_ptr<typename std::decay<T>::type>(buffer_);
             if(buffer_ptr)
             {
-                Handle<T,false>* handle = dynamic_cast<Handle<T,false>*>(handle_);
+                const Handle<T,false>* handle = dynamic_cast<const Handle<T,false>*>(handle_);
                 if(handle)
                     return &handle->value_;
             }
             else
             {
-                Handle<T,true>* handle = dynamic_cast<Handle<T,true>*>(handle);
+                const Handle<T,true>* handle = dynamic_cast<const Handle<T,true>*>(handle_);
                 if(handle)
                     return &handle->value_;
             }
@@ -194,11 +194,10 @@ namespace SBO {
         static HandleBase* clone_impl (T&& value, Buffer& buffer)
         {
             using PlainType = typename std::decay<T>::type;
-            using BufferHandle = Handle<PlainType, false>;
     
             void* buf_ptr = get_buffer_ptr<PlainType>(buffer);
             if (buf_ptr) {
-                new (buf_ptr) BufferHandle( std::forward<T>(value) );
+                new (buf_ptr) Handle<PlainType, false>( std::forward<T>(value) );
                 return static_cast<HandleBase*>(buf_ptr);
             }
     
