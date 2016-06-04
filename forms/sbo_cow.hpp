@@ -2,18 +2,19 @@
 {
 public:
     // Contructors
-    %struct_name% () :
-        handle_ (nullptr),
-        buffer_ {}
-    {}
+    %struct_name% () = default;
 
-    template <typename T>
-    %struct_name% (T value) :
-        handle_ (nullptr),
-        buffer_ {}
-    { handle_ = clone_impl(std::move(value), buffer_); }
+    template <typename T,
+              typename std::enable_if<
+                  !std::is_same< %struct_name%, typename std::decay<T>::type >::value
+                  >::type* = nullptr>
+    %struct_name% (T&& value) noexcept ( std::is_rvalue_reference<T>::value &&
+                                         std::is_nothrow_move_constructible<typename std::decay<T>::type>::value )
+    {
+        handle_ = clone_impl(std::forward<T>(value), buffer_);
+    }
 
-    %struct_name% (const %struct_name% & rhs) :
+    %struct_name% (const %struct_name%& rhs) :
         handle_ (
             !rhs.handle_ || heap_allocated(rhs.handle_, rhs.buffer_) ?
             rhs.handle_ :
@@ -27,21 +28,25 @@ public:
             handle_->add_ref();
     }
 
-    %struct_name% (%struct_name% && rhs) noexcept :
-        handle_ (nullptr),
-        buffer_ {}
-    { swap(rhs.handle_, rhs.buffer_); }
+    %struct_name% (%struct_name%&& rhs) noexcept
+    {
+        swap(rhs.handle_, rhs.buffer_);
+    }
 
     // Assignment
-    template <typename T>
-    %struct_name% & operator= (T value)
+    template <typename T,
+              typename std::enable_if<
+                  !std::is_same< %struct_name%, typename std::decay<T>::type >::value
+                  >::type* = nullptr>
+    %struct_name%& operator= (T&& value) noexcept ( std::is_rvalue_reference<T>::value &&
+                                                    std::is_nothrow_move_constructible<typename std::decay<T>::type>::value )
     {
         reset();
-        handle_ = clone_impl(std::move(value), buffer_);
+        handle_ = clone_impl(std::forward<T>(value), buffer_);
         return *this;
     }
 
-    %struct_name% & operator= (const %struct_name% & rhs)
+    %struct_name%& operator= (const %struct_name%& rhs)
     {
         %struct_name% temp(rhs);
         swap(temp.handle_, temp.buffer_);
@@ -50,7 +55,7 @@ public:
         return *this;
     }
 
-    %struct_name% & operator= (%struct_name% && rhs) noexcept
+    %struct_name%& operator= (%struct_name%&& rhs) noexcept
     {
         %struct_name% temp(std::move(rhs));
         swap(temp.handle_, temp.buffer_);
@@ -58,17 +63,61 @@ public:
     }
 
     ~%struct_name% ()
-    { reset(); }
+    {
+        reset();
+    }
+
+    template <typename T>
+    T* cast()
+    {
+        assert(handle_);
+        void* buffer_ptr = get_buffer_ptr<typename std::decay<T>::type>(const_cast<Buffer&>(buffer_));
+        if(buffer_ptr)
+        {
+            Handle<T,false>* handle = dynamic_cast<Handle<T,false>*>(handle_);
+            if(handle)
+                return &handle->value_;
+        }
+        else
+        {
+            Handle<T,true>* handle = dynamic_cast<Handle<T,true>*>(handle_);
+            if(handle)
+                return &handle->value_;
+        }
+
+        return nullptr;
+    }
+
+    template <typename T>
+    const T* cast() const
+    {
+        assert(handle_);
+        void* buffer_ptr = get_buffer_ptr<typename std::decay<T>::type>(const_cast<Buffer&>(buffer_));
+        if(buffer_ptr)
+        {
+            Handle<T,false>* handle = dynamic_cast<Handle<T,false>*>(handle_);
+            if(handle)
+                return &handle->value_;
+        }
+        else
+        {
+            Handle<T,true>* handle = dynamic_cast<Handle<T,true>*>(handle_);
+            if(handle)
+                return &handle->value_;
+        }
+
+        return nullptr;
+    }
 
     %nonvirtual_members%
 
 private:
-    typedef std::array<unsigned char, 24> buffer;
+    using Buffer = std::array<char, 24>;
 
-    struct handle_base
+    struct HandleBase
     {
-        virtual ~handle_base () {}
-        virtual handle_base * clone_into (buffer & buf) const = 0;
+        virtual ~HandleBase () {}
+        virtual HandleBase* clone_into (Buffer & buf) const = 0;
         virtual bool unique () const = 0;
         virtual void add_ref () = 0;
         virtual void destroy () = 0;
@@ -77,29 +126,28 @@ private:
     };
 
     template <typename T, bool HeapAllocated>
-    struct handle :
-        handle_base
+    struct Handle : HandleBase
     {
-        template <typename U = T>
-        handle (T value,
-                typename std::enable_if<
-                    std::is_reference<U>::value
-                >::type * = 0) :
-            value_ (value),
-            ref_count_ (1)
+        template <typename U,
+                  typename std::enable_if<
+                      !std::is_same< T, typename std::decay<U>::type >::value
+                                           >::type* = nullptr>
+        explicit Handle( U&& value ) noexcept :
+            value_( value ),
+            ref_count_(1)
         {}
 
-        template <typename U = T>
-        handle (T value,
-                typename std::enable_if<
-                    !std::is_reference<U>::value,
-                    int
-                >::type * = 0) noexcept :
-            value_ (std::move(value)),
-            ref_count_ (1)
+        template <typename U,
+                  typename std::enable_if<
+                      std::is_same< T, typename std::decay<U>::type >::value
+                                           >::type* = nullptr>
+        explicit Handle( U&& value ) noexcept ( std::is_rvalue_reference<U>::value &&
+                                                std::is_nothrow_move_constructible<typename std::decay<U>::type>::value ) :
+            value_( std::forward<U>(value) ),
+            ref_count_(1)
         {}
 
-        virtual handle_base * clone_into (buffer & buf) const
+        virtual HandleBase * clone_into (Buffer & buf) const
         { return clone_impl(value_, buf); }
 
         virtual bool unique () const
@@ -114,7 +162,7 @@ private:
                 if (HeapAllocated)
                     delete this;
                 else
-                    this->~handle();
+                    this->~Handle();
             } else {
                 --ref_count_;
             }
@@ -127,46 +175,34 @@ private:
     };
 
     template <typename T, bool HeapAllocated>
-    struct handle<std::reference_wrapper<T>, HeapAllocated> :
-        handle<T &, HeapAllocated>
+    struct Handle<std::reference_wrapper<T>, HeapAllocated> : Handle<T&, HeapAllocated>
     {
-        handle (std::reference_wrapper<T> ref) :
-            handle<T &, HeapAllocated> (ref.get())
+        Handle (std::reference_wrapper<T> ref) :
+            Handle<T&, HeapAllocated> (ref.get())
         {}
     };
 
     template <typename T>
-    static handle_base * clone_impl (T value, buffer & buf)
+    static HandleBase * clone_impl (T&& value, Buffer& buffer)
     {
-        handle_base * retval = nullptr;
-        typedef typename std::remove_reference<T>::type handle_t;
-        void * buf_ptr = &buf;
-        std::size_t buf_size = sizeof(buf);
-        const std::size_t alignment = alignof(handle<handle_t, false>);
-        const std::size_t size = sizeof(handle<handle_t, false>);
-        const bool memcopyable =
-            std::is_trivially_destructible<typename std::remove_cv<T>::type>();
-        buf_ptr =
-            memcopyable ?
-            std::align(alignment, size, buf_ptr, buf_size) :
-            nullptr;
-        if (buf_ptr) {
-            new (buf_ptr) handle<handle_t, false>(std::move(value));
-            retval = static_cast<handle_base *>(buf_ptr);
-        } else {
-            retval = new handle<handle_t, true>(std::move(value));
+        using PlainType = typename std::decay<T>::type;
+
+        void* buffer_ptr = get_buffer_ptr<PlainType>(buffer);
+        if (buffer_ptr) {
+            new (buffer_ptr) Handle<PlainType, false>(std::forward<T>(value));
+            return static_cast<HandleBase*>(buffer_ptr);
         }
-        return retval;
+
+        return new Handle<PlainType, true>(std::forward<T>(value));
     }
 
-    static bool heap_allocated (const handle_base * h, const buffer & b)
+    static bool heap_allocated (const HandleBase* handle, const Buffer& buffer)
     {
-        return
-            h < handle_ptr(char_ptr(&b)) ||
-            handle_ptr(char_ptr(&b) + sizeof(b)) <= h;
+        return handle < handle_ptr(char_ptr(&buffer)) ||
+                handle_ptr(char_ptr(&buffer) + sizeof(buffer)) <= handle;
     }
 
-    void swap (handle_base * & rhs_handle, buffer & rhs_buffer)
+    void swap (HandleBase*& rhs_handle, Buffer& rhs_buffer)
     {
         const bool this_heap_allocated = heap_allocated(handle_, buffer_);
         const bool rhs_heap_allocated = heap_allocated(rhs_handle, rhs_buffer);
@@ -200,38 +236,52 @@ private:
             handle_->destroy();
     }
 
-    const handle_base & read () const
-    { return *handle_; }
+    const HandleBase& read () const
+    {
+        return *handle_;
+    }
 
-    handle_base & write ()
+    HandleBase & write ()
     {
         if (!handle_->unique())
             handle_ = handle_->clone_into(buffer_);
         return *handle_;
     }
 
-    template <typename T>
-    static unsigned char * char_ptr (T * ptr)
+    template <class T>
+    static void* get_buffer_ptr(Buffer& buffer)
     {
-        return static_cast<unsigned char *>(
-            static_cast<void *>(
-                const_cast<typename std::remove_const<T>::type *>(ptr)
+        using BufferHandle  = Handle<T, false>;
+        void * buf_ptr = &buffer;
+        std::size_t buf_size = sizeof(buffer);
+        const bool memcopyable = std::is_trivially_destructible<typename std::remove_cv<T>::type>();
+        return memcopyable ? std::align( alignof(BufferHandle),
+                                         sizeof(BufferHandle),
+                                         buf_ptr, buf_size ) : nullptr;
+    }
+
+    template <typename T>
+    static unsigned char* char_ptr (T* ptr)
+    {
+        return static_cast<unsigned char*>(
+            static_cast<void*>(
+                const_cast<typename std::remove_const<T>::type*>(ptr)
             )
         );
     }
 
-    static handle_base * handle_ptr (unsigned char * ptr)
-    { return static_cast<handle_base *>(static_cast<void *>(ptr)); }
+    static HandleBase * handle_ptr (unsigned char * ptr)
+    { return static_cast<HandleBase *>(static_cast<void *>(ptr)); }
 
-    static std::ptrdiff_t handle_offset (const handle_base * h,
-                                         const buffer & b)
+    static std::ptrdiff_t handle_offset (const HandleBase * handle,
+                                         const Buffer & buffer)
     {
-        assert(h);
-        unsigned char * const char_handle = char_ptr(h);
-        unsigned char * const char_buffer = char_ptr(&b);
+        assert(handle);
+        unsigned char * const char_handle = char_ptr(handle);
+        unsigned char * const char_buffer = char_ptr(&buffer);
         return char_handle - char_buffer;
     }
 
-    handle_base * handle_;
-    buffer buffer_;
+    HandleBase* handle_ = nullptr;
+    Buffer buffer_;
 };
