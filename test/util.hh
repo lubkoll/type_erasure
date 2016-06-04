@@ -1,5 +1,3 @@
-#pragma once
-
 
 #define CHECK_HEAP_ALLOC(expression, expected_allocations) \
     reset_heap_allocations(); \
@@ -9,6 +7,7 @@
       EXPECT_EQ( n_heap_allocations, expected_allocations ); \
     }
 
+
 inline std::size_t& heap_allocations ()
 {
     static std::size_t allocations_ = 0;
@@ -16,22 +15,28 @@ inline std::size_t& heap_allocations ()
 }
 
 inline void reset_heap_allocations ()
-{ heap_allocations() = 0; }
+{
+    heap_allocations() = 0;
+}
 
-void * operator new (std::size_t size)
+inline void* operator new (std::size_t size)
 {
     ++heap_allocations();
     return malloc(size);
 }
 
-void * operator new[] (std::size_t size)
+inline void* operator new[] (std::size_t size)
 {
     ++heap_allocations();
     return malloc(size);
 }
 
-void operator delete (void * ptr)
-{ free(ptr); }
+inline void operator delete (void * ptr)
+{
+    free(ptr);
+}
 
-void operator delete[] (void * ptr)
-{ free(ptr); }
+inline void operator delete[] (void * ptr)
+{
+    free(ptr);
+}
