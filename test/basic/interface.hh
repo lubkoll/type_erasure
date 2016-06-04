@@ -1,14 +1,23 @@
-%struct_prefix%
+#ifndef FOOABLE_HH
+#define FOOABLE_HH
+
+#include <cassert>
+#include <memory>
+#include <utility>
+#include <iostream>
+
+
+class Fooable
 {
 public:
     // Contructors
-    %struct_name% () = default;
+    Fooable () = default;
 
     template <typename T,
               typename std::enable_if<
-                  !std::is_same< %struct_name%, typename std::decay<T>::type >::value
+                  !std::is_same< Fooable, typename std::decay<T>::type >::value
                   >::type* = nullptr>
-    %struct_name% ( T&& value ) :
+    Fooable ( T&& value ) :
         handle_ (
             new handle<typename std::decay<T>::type>(
                 std::forward<T>( value )
@@ -16,37 +25,45 @@ public:
         )
     {}
 
-    %struct_name% ( const %struct_name% & rhs )
-        : handle_ ( rhs.handle_ != nullptr ? rhs.handle_->clone() : nullptr )
-    {}
+    Fooable ( const Fooable & rhs )
+        : handle_ ( rhs.handle_ ? rhs.handle_->clone() : nullptr )
+    {
+    }
 
-    %struct_name% ( %struct_name%&& rhs ) noexcept
+    Fooable ( Fooable&& rhs ) noexcept
         : handle_ ( std::move(rhs.handle_) )
     {}
 
     // Assignment
     template <typename T>
-    %struct_name% & operator= (T&& value)
+    Fooable & operator= (T&& value)
     {
-        %struct_name% temp( std::forward<T>( value ) );
+        Fooable temp( std::forward<T>( value ) );
         std::swap(temp, *this);
         return *this;
     }
 
-    %struct_name% & operator= (const %struct_name% & rhs)
+    Fooable & operator= (const Fooable & rhs)
     {
-        %struct_name% temp(rhs);
+        Fooable temp(rhs);
         std::swap(temp, *this);
         return *this;
     }
 
-    %struct_name% & operator= (%struct_name% && rhs) noexcept
+    Fooable & operator= (Fooable && rhs) noexcept
     {
         handle_ = std::move(rhs.handle_);
         return *this;
     }
 
-    %nonvirtual_members%
+    int foo ( ) const
+    {
+        assert(handle_); return handle_->foo( );
+    }
+    void set_value ( int value )
+    {
+        assert(handle_); handle_->set_value(value );
+    }
 
 private:
     struct handle_base
@@ -54,7 +71,8 @@ private:
         virtual ~handle_base () {}
         virtual handle_base * clone () const = 0;
 
-        %pure_virtual_members%
+        virtual int foo ( ) const = 0;
+        virtual void set_value ( int value ) = 0;
     };
 
     template <typename T>
@@ -83,7 +101,12 @@ private:
           return new handle(value_); 
         }
 
-        %virtual_members%
+        virtual int foo ( ) const {
+            return value_.foo( );
+        }
+        virtual void set_value ( int value ) {
+            value_.set_value(value );
+        }
 
         T value_;
     };
@@ -99,3 +122,5 @@ private:
 
     std::unique_ptr<handle_base> handle_ = nullptr;
 };
+#endif
+

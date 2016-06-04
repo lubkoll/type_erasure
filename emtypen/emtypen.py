@@ -218,10 +218,11 @@ def close_struct ():
             indentation * 2 + 'virtual ' + function[0] + ' = 0;\n'
 
         virtual_members += \
-            indentation * 2 + 'virtual ' + function[0] + '\n' + \
-            indentation * 2 + '{ ' + function[2] + \
+            indentation * 2 + 'virtual ' + function[0] + ' {\n' + \
+            indentation * 3 + function[2] + \
             'value_.' + function[3] + \
-            '(' + function[1] + ' ); }\n'
+            '(' + function[1] + ' );\n' + \
+            indentation * 2 + '}\n'
 
     nonvirtual_members = nonvirtual_members[:-1]
     pure_virtual_members = pure_virtual_members[:-1]
