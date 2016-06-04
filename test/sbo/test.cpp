@@ -289,3 +289,26 @@ TEST( TestSBOFooable, MoveAssignFromValueWithReferenceWrapper_LargeObject )
     fooable = std::move(std::ref(mock_fooable));
     test_ref_interface( fooable, mock_fooable, Mock::other_value );
 }
+
+
+TEST( TestSBOFooable, Cast_SmallObject )
+{
+    Fooable fooable = MockFooable();
+
+    EXPECT_TRUE( fooable.cast<int>() == nullptr );
+    ASSERT_FALSE( fooable.cast<MockFooable>() == nullptr );
+
+    fooable.set_value(Mock::other_value);
+    EXPECT_EQ( fooable.cast<MockFooable>()->foo(), Mock::other_value );
+}
+
+TEST( TestSBOFooable, Cast_LargeObject )
+{
+    Fooable fooable = MockLargeFooable();
+
+    EXPECT_TRUE( fooable.cast<int>() == nullptr );
+    ASSERT_FALSE( fooable.cast<MockLargeFooable>() == nullptr );
+
+    fooable.set_value(Mock::other_value);
+    EXPECT_EQ( fooable.cast<MockFooable>()->foo(), Mock::other_value );
+}
