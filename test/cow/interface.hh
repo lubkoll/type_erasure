@@ -18,7 +18,8 @@ namespace COW {
                   typename std::enable_if<
                       !std::is_same< Fooable, typename std::decay<T>::type >::value
                       >::type* = nullptr>
-        Fooable (T&& value) :
+        Fooable (T&& value) noexcept ( std::is_rvalue_reference<T>::value &&
+                                             std::is_nothrow_move_constructible<typename std::decay<T>::type>::value ) :
             handle_ (
                 std::make_shared< Handle<typename std::decay<T>::type> >(
                     std::forward<T>(value)
@@ -31,7 +32,8 @@ namespace COW {
                   typename std::enable_if<
                       !std::is_same< Fooable, typename std::decay<T>::type >::value
                       >::type* = nullptr>
-        Fooable& operator= (T&& value)
+        Fooable& operator= (T&& value) noexcept ( std::is_rvalue_reference<T>::value &&
+                                                        std::is_nothrow_move_constructible<typename std::decay<T>::type>::value )
         {
             Fooable temp( std::forward<T>(value) );
             std::swap(temp.handle_, handle_);
@@ -41,24 +43,32 @@ namespace COW {
         template <typename T>
         T* cast()
         {
-            return dynamic_cast<T*>( handle_.get() );
+            assert(handle_);
+            Handle<T>* handle = dynamic_cast<Handle<T>*>( handle_.get() );
+            if(handle)
+                return &handle->value_;
+            return nullptr;
         }
     
         template <typename T>
         const T* cast() const
         {
-            return dynamic_cast<const T*>( handle_.get() );
+            assert(handle_);
+            const Handle<T>* handle = dynamic_cast<const Handle<T>*>( handle_.get() );
+            if(handle)
+                return &handle->value_;
+            return nullptr;
         }
     
         int foo ( ) const
         {
-            assert(handle_);
-            return read().foo( );
+                assert(handle_);
+                return read().foo( );
         }
         void set_value ( int value )
         {
-            assert(handle_);
-            write().set_value(value );
+                assert(handle_);
+                write().set_value(value );
         }
     
     private:
@@ -78,7 +88,7 @@ namespace COW {
                       typename std::enable_if<
                           !std::is_same< T, typename std::decay<U>::type >::value
                                                >::type* = nullptr>
-            explicit Handle( U&& value )
+            explicit Handle( U&& value ) noexcept
                 : value_( value )
             {}
     
@@ -86,7 +96,8 @@ namespace COW {
                       typename std::enable_if<
                           std::is_same< T, typename std::decay<U>::type >::value
                                                >::type* = nullptr>
-            explicit Handle( U&& value )
+            explicit Handle( U&& value ) noexcept ( std::is_rvalue_reference<U>::value &&
+                                                    std::is_nothrow_move_constructible<typename std::decay<U>::type>::value )
                 : value_( std::forward<U>(value) )
             {}
     

@@ -167,3 +167,11 @@ TEST( TestCOWFooable, MoveAssignFromValueWithReferenceWrapper )
     fooable = std::move(std::ref(mock_fooable));
     test_ref_interface( fooable, mock_fooable, Mock::other_value );
 }
+
+TEST( TestCOWFooable, Cast )
+{
+    Fooable fooable = MockFooable();
+
+    EXPECT_TRUE( fooable.cast<int>() == nullptr );
+    EXPECT_FALSE( fooable.cast<MockFooable>() == nullptr );
+}
