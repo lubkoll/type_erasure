@@ -10,6 +10,7 @@ aux_source_directory(. SRC_LIST)
 aux_source_directory(basic SRC_LIST)
 aux_source_directory(cow SRC_LIST)
 aux_source_directory(sbo SRC_LIST)
+aux_source_directory(sbo_cow SRC_LIST)
 
 add_executable(unit_tests ${SRC_LIST})
 target_link_libraries(unit_tests ${GTEST_LIBRARIES} pthread)
