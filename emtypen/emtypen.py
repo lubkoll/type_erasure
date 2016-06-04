@@ -203,8 +203,8 @@ def close_struct ():
             nonvirtual_members += \
                 indentation + function[0] + '\n' + \
                 indentation + '{\n' + \
-		indentation * 2 + 'assert(handle_);\n' + \
-		indentation * 2 +  function[2] + \
+		indent(function_offset) + 'assert(handle_);\n' + \
+		indent(function_offset) +  function[2] + \
                 (function[4] == 'const' and 'read().' or 'write().') + \
                 function[3] + '(' + function[1] + ' );\n' + \
 		indentation + '}\n'
@@ -212,8 +212,8 @@ def close_struct ():
             nonvirtual_members += \
                 indentation + function[0] + '\n' + \
                 indentation + '{\n' + \
-                indent(function_offset) + 'assert(handle_); ' + function[2] + \
-                'handle_->' + function[3] + \
+                indent(function_offset) + 'assert(handle_);\n' + \
+		indent(function_offset) + function[2] + 'handle_->' + function[3] + \
                 '(' + function[1] + ' );\n' + \
                 indentation + '}\n'
 
