@@ -202,9 +202,12 @@ def close_struct ():
         if data.copy_on_write:
             nonvirtual_members += \
                 indentation + function[0] + '\n' + \
-                indentation + '{\nassert(handle_); ' + function[2] + \
+                indentation + '{\n' + \
+		indentation * 2 + 'assert(handle_);\n' + \
+		indentation * 2 +  function[2] + \
                 (function[4] == 'const' and 'read().' or 'write().') + \
-                function[3] + '(' + function[1] + ' );\n}\n'
+                function[3] + '(' + function[1] + ' );\n' + \
+		indentation + '}\n'
         else:
             nonvirtual_members += \
                 indentation + function[0] + '\n' + \
@@ -471,6 +474,7 @@ null_cursor = clang.cindex.conf.lib.clang_getNullCursor()
 from_main_file = clang.cindex.conf.lib.clang_Location_isFromMainFile
 
 data = client_data()
+data.copy_on_write = args.copy_on_write == "True"
 
 data.form = prepare_form(open(args.form).read())
 data.form_lines = prepare_form(open(args.form).readlines())
