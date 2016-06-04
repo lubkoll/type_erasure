@@ -1,11 +1,13 @@
-#ifndef FOOABLE_HH
-#define FOOABLE_HH
+#ifndef BASIC_FOOABLE_HH
+#define BASIC_FOOABLE_HH
 
-class Fooable
+namespace Basic
 {
-public:
-    int foo() const;
-    void set_value(int value);
-};
-
+    class Fooable
+    {
+    public:
+        int foo() const;
+        void set_value(int value);
+    };
+}
 #endif

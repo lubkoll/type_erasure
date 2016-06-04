@@ -5,6 +5,7 @@
 
 namespace
 {
+    using Basic::Fooable;
     using Mock::MockFooable;
 
     void death_tests( Fooable& fooable )
@@ -39,7 +40,7 @@ namespace
     }
 }
 
-TEST( TestFooable, Empty )
+TEST( TestBasicFooable, Empty )
 {
     Fooable fooable;
     death_tests(fooable);
@@ -55,11 +56,11 @@ TEST( TestFooable, Empty )
     death_tests(copy_assign);
 
     Fooable move_assign;
-    move_assign = std::move(fooable);
+    move_assign = std::move(copy_assign);
     death_tests(move_assign);
 }
 
-TEST( TestFooable, CopyFromValue )
+TEST( TestBasicFooable, CopyFromValue )
 {
     MockFooable mock_fooable;
     auto value = mock_fooable.foo();
@@ -68,14 +69,14 @@ TEST( TestFooable, CopyFromValue )
     test_interface( fooable, value, Mock::other_value );
 }
 
-TEST( TestFooable, CopyConstruction )
+TEST( TestBasicFooable, CopyConstruction )
 {
     Fooable fooable = MockFooable();
     Fooable other( fooable );
     test_copies( other, fooable, Mock::other_value );
 }
 
-TEST( TestFooable, CopyFromValueWithReferenceWrapper )
+TEST( TestBasicFooable, CopyFromValueWithReferenceWrapper )
 {
     MockFooable mock_fooable;
     Fooable fooable( std::ref(mock_fooable) );
@@ -83,7 +84,7 @@ TEST( TestFooable, CopyFromValueWithReferenceWrapper )
     test_ref_interface( fooable, mock_fooable, Mock::other_value );
 }
 
-TEST( TestFooable, MoveFromValue )
+TEST( TestBasicFooable, MoveFromValue )
 {
     MockFooable mock_fooable;
     auto value = mock_fooable.foo();
@@ -92,7 +93,7 @@ TEST( TestFooable, MoveFromValue )
     test_interface( fooable, value, Mock::other_value );
 }
 
-TEST( TestFooable, MoveConstruction )
+TEST( TestBasicFooable, MoveConstruction )
 {
     Fooable fooable = MockFooable();
     auto value = fooable.foo();
@@ -102,7 +103,7 @@ TEST( TestFooable, MoveConstruction )
     death_tests(fooable);
 }
 
-TEST( TestFooable, MoveFromValueWithReferenceWrapper )
+TEST( TestBasicFooable, MoveFromValueWithReferenceWrapper )
 {
     MockFooable mock_fooable;
     Fooable fooable( std::move(std::ref(mock_fooable)) );
@@ -110,19 +111,17 @@ TEST( TestFooable, MoveFromValueWithReferenceWrapper )
     test_ref_interface( fooable, mock_fooable, Mock::other_value );
 }
 
-TEST( TestFooable, CopyAssignFromValue )
+TEST( TestBasicFooable, CopyAssignFromValue )
 {
     MockFooable mock_fooable;
     Fooable fooable;
-
-    death_tests(fooable);
 
     auto value = mock_fooable.foo();
     fooable = mock_fooable;
     test_interface(fooable, value, Mock::other_value);
 }
 
-TEST( TestFooable, CopyAssignment )
+TEST( TestBasicFooable, CopyAssignment )
 {
     Fooable fooable = MockFooable();
     Fooable other;
@@ -130,30 +129,26 @@ TEST( TestFooable, CopyAssignment )
     test_copies( other, fooable, Mock::other_value );
 }
 
-TEST( TestFooable, CopyAssignFromValueWithReferenceWrapper )
+TEST( TestBasicFooable, CopyAssignFromValueWithReferenceWrapper )
 {
     MockFooable mock_fooable;
     Fooable fooable;
-
-    death_tests(fooable);
 
     fooable = std::ref(mock_fooable);
     test_ref_interface( fooable, mock_fooable, Mock::other_value );
 }
 
-TEST( TestFooable, MoveAssignFromValue )
+TEST( TestBasicFooable, MoveAssignFromValue )
 {
     MockFooable mock_fooable;
     Fooable fooable;
-
-    death_tests(fooable);
 
     auto value = mock_fooable.foo();
     fooable = std::move(mock_fooable);
     test_interface(fooable, value, Mock::other_value);
 }
 
-TEST( TestFooable, MoveAssignment )
+TEST( TestBasicFooable, MoveAssignment )
 {
     Fooable fooable = MockFooable();
     auto value = fooable.foo();
@@ -164,12 +159,10 @@ TEST( TestFooable, MoveAssignment )
     death_tests(fooable);
 }
 
-TEST( TestFooable, MoveAssignFromValueWithReferenceWrapper )
+TEST( TestBasicFooable, MoveAssignFromValueWithReferenceWrapper )
 {
     MockFooable mock_fooable;
     Fooable fooable;
-
-    death_tests(fooable);
 
     fooable = std::move(std::ref(mock_fooable));
     test_ref_interface( fooable, mock_fooable, Mock::other_value );

@@ -6,10 +6,11 @@
 
 namespace
 {
+    using Basic::Fooable;
     using Mock::MockFooable;
 }
 
-TEST( TestFooable, HeapAllocations_Empty )
+TEST( TestBasicFooable_HeapAllocations, Empty )
 {
     auto expected_heap_allocations = 0u;
 
@@ -27,11 +28,11 @@ TEST( TestFooable, HeapAllocations_Empty )
                       expected_heap_allocations );
 
     CHECK_HEAP_ALLOC( Fooable move_assign;
-                      move_assign = std::move(fooable),
+                      move_assign = std::move(copy_assign),
                       expected_heap_allocations );
 }
 
-TEST( TestFooable, HeapAllocations_CopyFromValue )
+TEST( TestBasicFooable_HeapAllocations, CopyFromValue )
 {
     auto expected_heap_allocations = 1u;
 
@@ -40,7 +41,7 @@ TEST( TestFooable, HeapAllocations_CopyFromValue )
                       expected_heap_allocations );
 }
 
-TEST( TestFooable, HeapAllocations_CopyConstruction )
+TEST( TestBasicFooable_HeapAllocations, CopyConstruction )
 {
     auto expected_heap_allocations = 1u;
 
@@ -49,7 +50,7 @@ TEST( TestFooable, HeapAllocations_CopyConstruction )
                       expected_heap_allocations );
 }
 
-TEST( TestFooable, HeapAllocations_CopyFromValueWithReferenceWrapper )
+TEST( TestBasicFooable_HeapAllocations, CopyFromValueWithReferenceWrapper )
 {
     auto expected_heap_allocations = 1u;
 
@@ -58,7 +59,7 @@ TEST( TestFooable, HeapAllocations_CopyFromValueWithReferenceWrapper )
                       expected_heap_allocations );
 }
 
-TEST( TestFooable, HeapAllocations_MoveFromValue )
+TEST( TestBasicFooable_HeapAllocations, MoveFromValue )
 {
     auto expected_heap_allocations = 1u;
 
@@ -67,7 +68,7 @@ TEST( TestFooable, HeapAllocations_MoveFromValue )
                       expected_heap_allocations );
 }
 
-TEST( TestFooable, HeapAllocations_MoveConstruction )
+TEST( TestBasicFooable_HeapAllocations, MoveConstruction )
 {
     auto expected_heap_allocations = 0u;
 
@@ -76,7 +77,7 @@ TEST( TestFooable, HeapAllocations_MoveConstruction )
                       expected_heap_allocations );
 }
 
-TEST( TestFooable, HeapAllocations_MoveFromValueWithReferenceWrapper )
+TEST( TestBasicFooable_HeapAllocations, MoveFromValueWithReferenceWrapper )
 {
     auto expected_heap_allocations = 1u;
 
@@ -85,7 +86,7 @@ TEST( TestFooable, HeapAllocations_MoveFromValueWithReferenceWrapper )
                       expected_heap_allocations );
 }
 
-TEST( TestFooable, HeapAllocations_CopyAssignFromValue )
+TEST( TestBasicFooable_HeapAllocations, CopyAssignFromValue )
 {
     auto expected_heap_allocations = 1u;
 
@@ -95,7 +96,7 @@ TEST( TestFooable, HeapAllocations_CopyAssignFromValue )
                       expected_heap_allocations );
 }
 
-TEST( TestFooable, HeapAllocations_CopyAssignment )
+TEST( TestBasicFooable_HeapAllocations, CopyAssignment )
 {
     auto expected_heap_allocations = 1u;
 
@@ -105,7 +106,7 @@ TEST( TestFooable, HeapAllocations_CopyAssignment )
                       expected_heap_allocations );
 }
 
-TEST( TestFooable, HeapAllocations_CopyAssignFromValuenWithReferenceWrapper )
+TEST( TestBasicFooable_HeapAllocations, CopyAssignFromValuenWithReferenceWrapper )
 {
     auto expected_heap_allocations = 1u;
 
@@ -115,7 +116,7 @@ TEST( TestFooable, HeapAllocations_CopyAssignFromValuenWithReferenceWrapper )
                       expected_heap_allocations );
 }
 
-TEST( TestFooable, HeapAllocations_MoveAssignFromValue )
+TEST( TestBasicFooable_HeapAllocations, MoveAssignFromValue )
 {
     auto expected_heap_allocations = 1u;
 
@@ -125,7 +126,7 @@ TEST( TestFooable, HeapAllocations_MoveAssignFromValue )
                       expected_heap_allocations );
 }
 
-TEST( TestFooable, HeapAllocations_MoveAssignment )
+TEST( TestBasicFooable_HeapAllocations, MoveAssignment )
 {
     auto expected_heap_allocations = 0u;
 
@@ -136,7 +137,7 @@ TEST( TestFooable, HeapAllocations_MoveAssignment )
 }
 
 
-TEST( TestFooable, HeapAllocations_MoveAssignFromValueWithReferenceWrapper )
+TEST( TestBasicFooable_HeapAllocations, MoveAssignFromValueWithReferenceWrapper )
 {
     auto expected_heap_allocations = 1u;
 
