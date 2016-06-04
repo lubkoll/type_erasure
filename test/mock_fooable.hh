@@ -1,6 +1,8 @@
 #ifndef MOCK_FOOABLE_HH
 #define MOCK_FOOABLE_HH
 
+#include <array>
+
 namespace Mock
 {
     constexpr int value = 42;
@@ -20,6 +22,12 @@ namespace Mock
 
     private:
         int value_ = value;
+    };
+
+    struct MockLargeFooable : MockFooable
+    {
+    private:
+        std::array<double,1024> buffer_;
     };
 }
 
