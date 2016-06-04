@@ -121,7 +121,7 @@ namespace SBO {
         }
     
         private:
-            using Buffer = std::array<unsigned char, 24>;
+            using Buffer = std::array<unsigned char, SMALL_OBJECT_OPTIMIZATION_BUFFER_SIZE>;
     
         struct HandleBase
         {

@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 
+#define SMALL_OBJECT_OPTIMIZATION_BUFFER_SIZE 24
 #include "interface.hh"
 #include "../mock_fooable.hh"
 #include "../util.hh"
